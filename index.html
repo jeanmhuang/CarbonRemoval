@@ -1,0 +1,1600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carbon Removal Race - Climate Education Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container { max-width: 1400px; margin: 0 auto; }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+        }
+        
+        .header h1 { font-size: 36px; margin-bottom: 10px; }
+        .header p { font-size: 18px; opacity: 0.9; }
+        
+        .game-mode {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .mode-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .mode-btn {
+            padding: 15px 30px;
+            background: rgba(255,255,255,0.2);
+            border: 3px solid white;
+            border-radius: 12px;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .mode-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+        
+        .mode-btn.active {
+            background: #22c55e;
+            border-color: #22c55e;
+            color: #1f2937;
+        }
+        
+        .game-section {
+            display: none;
+        }
+        
+        .game-section.active {
+            display: block;
+        }
+        
+        /* Exploration Mode */
+        .methods-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .method-card {
+            background: rgba(255,255,255,0.15);
+            border-radius: 15px;
+            border: 3px solid white;
+            perspective: 1000px;
+            height: 400px;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        
+        .method-card.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+        
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 12px;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .card-front {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .card-back {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            transform: rotateY(180deg);
+        }
+        
+        .method-icon {
+            font-size: 72px;
+            margin-bottom: 15px;
+        }
+        
+        .method-name {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        .method-type {
+            font-size: 16px;
+            opacity: 0.9;
+            margin-bottom: 15px;
+            padding: 8px 15px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 20px;
+        }
+        
+        .method-teaser {
+            font-size: 16px;
+            line-height: 1.6;
+            opacity: 0.95;
+        }
+        
+        .method-details {
+            text-align: left;
+            overflow-y: auto;
+            max-height: 100%;
+        }
+        
+        .detail-section {
+            margin-bottom: 15px;
+        }
+        
+        .detail-label {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .detail-value {
+            font-size: 14px;
+            line-height: 1.5;
+            opacity: 0.95;
+        }
+        
+        .stat-bar {
+            height: 8px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        
+        .stat-fill {
+            height: 100%;
+            background: white;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .flip-hint {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            opacity: 0.7;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+        
+        /* Challenge Mode */
+        .challenge-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .challenge-card {
+            background: rgba(255,255,255,0.15);
+            border-radius: 15px;
+            border: 3px solid white;
+            padding: 30px;
+            margin-bottom: 25px;
+        }
+        
+        .challenge-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .scenario {
+            font-size: 18px;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            padding: 20px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 12px;
+        }
+        
+        .options-grid {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .option-btn {
+            padding: 20px;
+            background: rgba(255,255,255,0.2);
+            border: 3px solid white;
+            border-radius: 12px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .option-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateX(5px);
+        }
+        
+        .option-btn.selected {
+            border-color: #22c55e;
+            background: rgba(34, 197, 94, 0.3);
+        }
+        
+        .option-btn.correct {
+            border-color: #22c55e;
+            background: rgba(34, 197, 94, 0.4);
+        }
+        
+        .option-btn.incorrect {
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.4);
+        }
+        
+        .option-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .option-desc {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .feedback {
+            padding: 20px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .feedback.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .feedback-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .feedback-text {
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        
+        .challenge-nav {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex: 1;
+        }
+        
+        .btn-primary {
+            background: #22c55e;
+            color: #1f2937;
+        }
+        
+        .btn-primary:disabled {
+            background: #6b7280;
+            cursor: not-allowed;
+        }
+        
+        .btn-secondary {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+        }
+        
+        .progress-bar {
+            height: 30px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 25px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #22c55e;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+        }
+        
+        /* Calculator Mode */
+        .calculator-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .calc-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+        
+        .calc-panel {
+            background: rgba(255,255,255,0.15);
+            border-radius: 15px;
+            border: 3px solid white;
+            padding: 25px;
+        }
+        
+        .calc-title {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        .input-label {
+            font-size: 16px;
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        .input-field {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid white;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            font-size: 16px;
+        }
+        
+        .input-field::placeholder {
+            color: rgba(255,255,255,0.6);
+        }
+        
+        .select-field {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid white;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        .select-field option {
+            background: #764ba2;
+            color: white;
+        }
+        
+        .calc-result {
+            padding: 20px;
+            background: rgba(34, 197, 94, 0.3);
+            border: 3px solid #22c55e;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+        
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+        
+        .result-label {
+            font-weight: bold;
+        }
+        
+        .result-value {
+            font-weight: bold;
+            color: #22c55e;
+        }
+        
+        .comparison-table {
+            background: rgba(255,255,255,0.15);
+            border-radius: 15px;
+            border: 3px solid white;
+            padding: 25px;
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        th {
+            font-weight: bold;
+            font-size: 14px;
+            background: rgba(255,255,255,0.1);
+        }
+        
+        td {
+            font-size: 14px;
+        }
+        
+        .score-display {
+            text-align: center;
+            padding: 25px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 15px;
+            border: 3px solid #22c55e;
+            margin-bottom: 25px;
+        }
+        
+        .score-title {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .score-value {
+            font-size: 48px;
+            font-weight: bold;
+            color: #22c55e;
+        }
+
+        @media (max-width: 768px) {
+            .methods-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .calc-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 28px;
+            }
+            
+            table {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌱 Carbon Removal Race</h1>
+            <p>Explore and compare different methods to remove CO₂ from the atmosphere!</p>
+        </div>
+
+        <div class="game-mode">
+            <div class="mode-buttons">
+                <button class="mode-btn active" onclick="switchMode('explore')">🔍 Explore Methods</button>
+                <button class="mode-btn" onclick="switchMode('challenge')">🎯 Challenge Mode</button>
+                <button class="mode-btn" onclick="switchMode('calculator')">🧮 Calculator</button>
+            </div>
+        </div>
+
+        <!-- Exploration Mode -->
+        <div class="game-section active" id="explore-section">
+            <div class="methods-grid" id="methods-grid"></div>
+        </div>
+
+        <!-- Challenge Mode -->
+        <div class="game-section" id="challenge-section">
+            <div class="challenge-container">
+                <div class="score-display">
+                    <div class="score-title">Score</div>
+                    <div class="score-value"><span id="score">0</span> / <span id="total-challenges">5</span></div>
+                </div>
+                
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill" style="width: 0%">
+                        Challenge <span id="current-challenge">1</span> of <span id="max-challenges">5</span>
+                    </div>
+                </div>
+                
+                <div class="challenge-card">
+                    <div class="challenge-title" id="challenge-title"></div>
+                    <div class="scenario" id="scenario-text"></div>
+                    <div class="options-grid" id="options-grid"></div>
+                    <div class="feedback" id="feedback">
+                        <div class="feedback-title" id="feedback-title"></div>
+                        <div class="feedback-text" id="feedback-text"></div>
+                    </div>
+                    <div class="challenge-nav">
+                        <button class="btn btn-primary" id="submit-btn" disabled>Submit Answer</button>
+                        <button class="btn btn-secondary" id="next-btn" style="display: none;">Next Challenge →</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Calculator Mode -->
+        <div class="game-section" id="calculator-section">
+            <div class="calculator-container">
+                <div class="calc-grid">
+                    <div class="calc-panel">
+                        <div class="calc-title">⚙️ Carbon Removal Calculator</div>
+                        
+                        <div class="input-group">
+                            <label class="input-label">Select Method:</label>
+                            <select class="select-field" id="calc-method" onchange="updateCalculator()">
+                                <option value="reforestation">Reforestation</option>
+                                <option value="dac">Direct Air Capture (DAC)</option>
+                                <option value="biochar">Biochar</option>
+                                <option value="oceanfert">Ocean Fertilization</option>
+                                <option value="mineralweather">Enhanced Weathering</option>
+                                <option value="beccs">BECCS</option>
+                            </select>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label class="input-label">Target CO₂ Removal (tons/year):</label>
+                            <input type="number" class="input-field" id="calc-target" value="1000" min="1" onchange="updateCalculator()">
+                        </div>
+                        
+                        <div class="input-group">
+                            <label class="input-label">Budget ($ millions):</label>
+                            <input type="number" class="input-field" id="calc-budget" value="10" min="0.1" step="0.1" onchange="updateCalculator()">
+                        </div>
+                        
+                        <button class="btn btn-primary" onclick="updateCalculator()" style="width: 100%;">Calculate</button>
+                        
+                        <div class="calc-result" id="calc-result" style="display: none;">
+                            <div class="result-row">
+                                <span class="result-label">Cost per Ton:</span>
+                                <span class="result-value" id="result-cost">$0</span>
+                            </div>
+                            <div class="result-row">
+                                <span class="result-label">CO₂ Removed:</span>
+                                <span class="result-value" id="result-removed">0 tons</span>
+                            </div>
+                            <div class="result-row">
+                                <span class="result-label">Timeline:</span>
+                                <span class="result-value" id="result-timeline">0 years</span>
+                            </div>
+                            <div class="result-row">
+                                <span class="result-label">Permanence:</span>
+                                <span class="result-value" id="result-permanence">0 years</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="calc-panel">
+                        <div class="calc-title">📊 Method Details</div>
+                        <div id="method-info"></div>
+                    </div>
+                </div>
+                
+                <div class="comparison-table">
+                    <div class="calc-title">🔬 Quick Comparison</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Method</th>
+                                <th>Cost/Ton</th>
+                                <th>Scale Potential</th>
+                                <th>Permanence</th>
+                                <th>Maturity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>🌳 Reforestation</td>
+                                <td>$10-50</td>
+                                <td>High (10+ Gt/yr)</td>
+                                <td>40-100 years</td>
+                                <td>Proven</td>
+                            </tr>
+                            <tr>
+                                <td>🏭 Direct Air Capture</td>
+                                <td>$600-1000</td>
+                                <td>Medium (5 Gt/yr)</td>
+                                <td>1000+ years</td>
+                                <td>Early Stage</td>
+                            </tr>
+                            <tr>
+                                <td>🔥 Biochar</td>
+                                <td>$100-300</td>
+                                <td>Medium (2 Gt/yr)</td>
+                                <td>100-1000 years</td>
+                                <td>Developing</td>
+                            </tr>
+                            <tr>
+                                <td>🌊 Ocean Fertilization</td>
+                                <td>$50-200</td>
+                                <td>High (3+ Gt/yr)</td>
+                                <td>100-1000 years</td>
+                                <td>Research</td>
+                            </tr>
+                            <tr>
+                                <td>⛰️ Enhanced Weathering</td>
+                                <td>$50-200</td>
+                                <td>High (4+ Gt/yr)</td>
+                                <td>10,000+ years</td>
+                                <td>Research</td>
+                            </tr>
+                            <tr>
+                                <td>🌾 BECCS</td>
+                                <td>$100-300</td>
+                                <td>High (5+ Gt/yr)</td>
+                                <td>1000+ years</td>
+                                <td>Pilot Stage</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const carbonMethods = [
+            {
+                id: 'reforestation',
+                name: 'Reforestation & Afforestation',
+                icon: '🌳',
+                type: 'Nature-Based',
+                teaser: 'Plant trees to absorb CO₂ through photosynthesis',
+                cost: 3, // 1-5 scale
+                scale: 5,
+                permanence: 2,
+                maturity: 5,
+                costPerTon: 30,
+                timeline: 20,
+                permanenceYears: 100,
+                pros: '✅ Low cost, ✅ Biodiversity benefits, ✅ Water cycle regulation, ✅ Proven technology',
+                cons: '❌ Land requirements, ❌ Fire risk, ❌ Competition with agriculture, ❌ Slow carbon uptake',
+                description: 'Trees absorb CO₂ as they grow through photosynthesis. Reforestation (replanting deforested areas) and afforestation (creating new forests) are proven methods with multiple co-benefits.'
+            },
+            {
+                id: 'dac',
+                name: 'Direct Air Capture (DAC)',
+                icon: '🏭',
+                type: 'Engineered',
+                teaser: 'Machines that chemically capture CO₂ from ambient air',
+                cost: 1,
+                scale: 3,
+                permanence: 5,
+                maturity: 2,
+                costPerTon: 800,
+                timeline: 1,
+                permanenceYears: 10000,
+                pros: '✅ Permanent storage, ✅ No land competition, ✅ Precise monitoring, ✅ Location flexible',
+                cons: '❌ Very expensive, ❌ High energy needs, ❌ Early stage technology, ❌ Limited deployment',
+                description: 'DAC uses chemical processes to capture CO₂ directly from the atmosphere. The captured CO₂ is then stored underground permanently or used in products.'
+            },
+            {
+                id: 'biochar',
+                name: 'Biochar Production',
+                icon: '🔥',
+                type: 'Nature-Based + Engineered',
+                teaser: 'Convert biomass into stable carbon through pyrolysis',
+                cost: 3,
+                scale: 3,
+                permanence: 4,
+                maturity: 3,
+                costPerTon: 200,
+                timeline: 1,
+                permanenceYears: 1000,
+                pros: '✅ Improves soil fertility, ✅ Uses agricultural waste, ✅ Fairly permanent, ✅ Multiple benefits',
+                cons: '❌ Requires biomass feedstock, ❌ Production energy, ❌ Scale limitations, ❌ Distribution challenges',
+                description: 'Biochar is created by heating organic material in a low-oxygen environment (pyrolysis). The resulting charcoal-like substance stores carbon for centuries while improving soil health.'
+            },
+            {
+                id: 'oceanfert',
+                name: 'Ocean Fertilization',
+                icon: '🌊',
+                type: 'Ocean-Based',
+                teaser: 'Add nutrients to oceans to boost phytoplankton growth',
+                cost: 4,
+                scale: 4,
+                permanence: 3,
+                maturity: 1,
+                costPerTon: 100,
+                timeline: 5,
+                permanenceYears: 500,
+                pros: '✅ Low cost, ✅ Large potential, ✅ Uses ocean capacity, ✅ Natural process',
+                cons: '❌ Ecosystem risks, ❌ Verification difficult, ❌ Governance issues, ❌ Unknown side effects',
+                description: 'Adding iron or other nutrients to ocean areas stimulates phytoplankton blooms that absorb CO₂. When they die, some carbon sinks to the deep ocean.'
+            },
+            {
+                id: 'mineralweather',
+                name: 'Enhanced Weathering',
+                icon: '⛰️',
+                type: 'Engineered',
+                teaser: 'Accelerate natural rock weathering to sequester CO₂',
+                cost: 3,
+                scale: 4,
+                permanence: 5,
+                maturity: 2,
+                costPerTon: 100,
+                timeline: 10,
+                permanenceYears: 100000,
+                pros: '✅ Permanent storage, ✅ Large potential, ✅ Improves soil, ✅ Ocean alkalinity',
+                cons: '❌ Mining impacts, ❌ Transport costs, ❌ Slow process, ❌ Monitoring challenges',
+                description: 'Spreading crushed silicate rocks on land or in oceans accelerates the natural weathering process that absorbs CO₂. The carbon is locked away as stable minerals.'
+            },
+            {
+                id: 'beccs',
+                name: 'BECCS',
+                icon: '🌾',
+                type: 'Engineered + Nature',
+                teaser: 'Bioenergy with Carbon Capture and Storage',
+                cost: 3,
+                scale: 4,
+                permanence: 5,
+                maturity: 2,
+                costPerTon: 200,
+                timeline: 5,
+                permanenceYears: 10000,
+                pros: '✅ Produces energy, ✅ Permanent storage, ✅ Uses biomass, ✅ High potential',
+                cons: '❌ Land competition, ❌ Water intensive, ❌ Infrastructure needs, ❌ Costly',
+                description: 'Growing biomass, burning it for energy, and capturing the CO₂ emissions for underground storage. This creates negative emissions while producing power.'
+            }
+        ];
+
+        const challenges = [
+            {
+                scenario: 'A tropical country with abundant rainfall and degraded forest land wants to remove 10 million tons of CO₂ over the next 20 years. They have a limited budget but plenty of land. Which method should they prioritize?',
+                options: [
+                    { text: 'Reforestation', desc: 'Plant native trees across degraded lands', correct: true },
+                    { text: 'Direct Air Capture', desc: 'Build DAC facilities', correct: false },
+                    { text: 'Ocean Fertilization', desc: 'Add iron to nearby ocean', correct: false },
+                    { text: 'Enhanced Weathering', desc: 'Spread crushed rock', correct: false }
+                ],
+                correctFeedback: '✅ Correct! Reforestation is ideal here - low cost, uses available land, provides biodiversity benefits, and suits the climate. With abundant rainfall and degraded land, tree planting offers the best cost-benefit ratio.',
+                incorrectFeedback: '❌ Not quite. While DAC, ocean fertilization, and enhanced weathering have potential, they\'re more expensive or risky. With limited budget, abundant land, and good rainfall, reforestation offers the most benefits per dollar spent.'
+            },
+            {
+                scenario: 'A wealthy desert nation wants permanent carbon removal but has minimal vegetation and limited water. They need a solution that doesn\'t compete with scarce resources. What\'s their best option?',
+                options: [
+                    { text: 'Reforestation', desc: 'Plant drought-resistant trees', correct: false },
+                    { text: 'Direct Air Capture', desc: 'Build solar-powered DAC plants', correct: true },
+                    { text: 'Biochar', desc: 'Import biomass for pyrolysis', correct: false },
+                    { text: 'BECCS', desc: 'Grow energy crops', correct: false }
+                ],
+                correctFeedback: '✅ Excellent choice! DAC is perfect for this scenario - it doesn\'t need land or water, can be powered by abundant solar energy in the desert, and provides permanent storage. The high cost is manageable with sufficient wealth.',
+                incorrectFeedback: '❌ Not ideal. Tree planting, biochar, and BECCS all need water and biomass - scarce resources here. DAC is better suited: it needs no land/water, can use solar power, and offers permanent removal despite higher costs.'
+            },
+            {
+                scenario: 'A farming community generates tons of agricultural waste annually. They want to improve soil fertility while removing carbon. Cost-effectiveness is important. Which method fits best?',
+                options: [
+                    { text: 'Biochar Production', desc: 'Convert waste to biochar', correct: true },
+                    { text: 'Reforestation', desc: 'Plant trees on farmland', correct: false },
+                    { text: 'Enhanced Weathering', desc: 'Apply rock dust', correct: false },
+                    { text: 'Ocean Fertilization', desc: 'Dump waste in ocean', correct: false }
+                ],
+                correctFeedback: '✅ Perfect! Biochar turns agricultural waste into a win-win: it removes carbon, improves soil fertility, retains water, and reduces need for fertilizer. The community benefits immediately while storing carbon for centuries.',
+                incorrectFeedback: '❌ Not optimal. Biochar is ideal here - it uses the available agricultural waste, improves soil quality, stores carbon long-term, and helps the community economically. It\'s the best fit for their specific situation and resources.'
+            },
+            {
+                scenario: 'Scientists propose adding iron to a remote ocean area to boost phytoplankton. The cost per ton of CO₂ removed would be very low. However, environmental groups have concerns. What\'s the main issue?',
+                options: [
+                    { text: 'Too expensive for the benefits', desc: 'Cost is prohibitive', correct: false },
+                    { text: 'Ecosystem disruption risks', desc: 'Could harm marine life', correct: true },
+                    { text: 'Carbon isn\'t really removed', desc: 'No actual sequestration', correct: false },
+                    { text: 'Iron is too rare', desc: 'Not enough available', correct: false }
+                ],
+                correctFeedback: '✅ Correct! The main concern with ocean fertilization is potential ecosystem disruption - toxic algal blooms, oxygen depletion, impacts on food webs, and unpredictable cascade effects. The marine environment is complex and interventions carry risks.',
+                incorrectFeedback: '❌ Not the main issue. Ocean fertilization is actually cheap, does remove CO₂ (though verification is hard), and iron is abundant. The real concern is ecosystem impacts - we don\'t fully understand the consequences of altering ocean chemistry at scale.'
+            },
+            {
+                scenario: 'A company wants maximum carbon removal permanence - they want CO₂ locked away for 10,000+ years. Budget isn\'t the primary concern. Which methods offer the longest storage?',
+                options: [
+                    { text: 'Reforestation only', desc: 'Plant maximum trees', correct: false },
+                    { text: 'DAC + Enhanced Weathering', desc: 'Engineered permanence', correct: true },
+                    { text: 'Biochar + Ocean Fertilization', desc: 'Mixed approach', correct: false },
+                    { text: 'BECCS only', desc: 'Bio-energy approach', correct: false }
+                ],
+                correctFeedback: '✅ Excellent! DAC with geological storage and enhanced weathering both offer 10,000+ year permanence. DAC stores CO₂ as compressed gas in geological formations, while weathering locks carbon in stable minerals. Both are essentially permanent.',
+                incorrectFeedback: '❌ Not quite. Trees store carbon for decades to centuries (vulnerable to fire, disease, logging). Biochar lasts centuries to millennia. For truly permanent removal (10,000+ years), engineered methods like DAC with geological storage and enhanced weathering are superior.'
+            }
+        ];
+
+        let currentChallenge = 0;
+        let score = 0;
+        let selectedOption = null;
+
+        function initGame() {
+            renderMethodCards();
+            loadChallenge();
+            updateCalculator();
+        }
+
+        function switchMode(mode) {
+            // Update buttons
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Show correct section
+            document.querySelectorAll('.game-section').forEach(section => section.classList.remove('active'));
+            document.getElementById(mode + '-section').classList.add('active');
+        }
+
+        function renderMethodCards() {
+            const grid = document.getElementById('methods-grid');
+            grid.innerHTML = '';
+            
+            carbonMethods.forEach(method => {
+                const card = document.createElement('div');
+                card.className = 'method-card';
+                card.innerHTML = `
+                    <div class="card-inner">
+                        <div class="card-front">
+                            <div class="method-icon">${method.icon}</div>
+                            <div class="method-name">${method.name}</div>
+                            <div class="method-type">${method.type}</div>
+                            <div class="method-teaser">${method.teaser}</div>
+                            <div class="flip-hint">👆 Click to learn more</div>
+                        </div>
+                        <div class="card-back">
+                            <div class="method-details">
+                                <div class="detail-section">
+                                    <div class="detail-label">💰 Cost Effectiveness</div>
+                                    <div class="stat-bar">
+                                        <div class="stat-fill" style="width: ${method.cost * 20}%"></div>
+                                    </div>
+                                </div>
+                                <div class="detail-section">
+                                    <div class="detail-label">📈 Scale Potential</div>
+                                    <div class="stat-bar">
+                                        <div class="stat-fill" style="width: ${method.scale * 20}%"></div>
+                                    </div>
+                                </div>
+                                <div class="detail-section">
+                                    <div class="detail-label">🔒 Permanence</div>
+                                    <div class="stat-bar">
+                                        <div class="stat-fill" style="width: ${method.permanence * 20}%"></div>
+                                    </div>
+                                </div>
+                                <div class="detail-section">
+                                    <div class="detail-label">🧪 Maturity Level</div>
+                                    <div class="stat-bar">
+                                        <div class="stat-fill" style="width: ${method.maturity * 20}%"></div>
+                                    </div>
+                                </div>
+                                <div class="detail-section">
+                                    <div class="detail-value">${method.description}</div>
+                                </div>
+                                <div class="detail-section">
+                                    <div class="detail-label">✅ Pros:</div>
+                                    <div class="detail-value">${method.pros}</div>
+                                </div>
+                                <div class="detail-section">
+                                    <div class="detail-label">❌ Cons:</div>
+                                    <div class="detail-value">${method.cons}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                card.addEventListener('click', () => {
+                    card.classList.toggle('flipped');
+                });
+                
+                grid.appendChild(card);
+            });
+        }
+
+        function loadChallenge() {
+            if (currentChallenge >= challenges.length) {
+                showFinalScore();
+                return;
+            }
+            
+            const challenge = challenges[currentChallenge];
+            
+            document.getElementById('challenge-title').textContent = `Challenge ${currentChallenge + 1}`;
+            document.getElementById('scenario-text').textContent = challenge.scenario;
+            document.getElementById('current-challenge').textContent = currentChallenge + 1;
+            document.getElementById('max-challenges').textContent = challenges.length;
+            document.getElementById('total-challenges').textContent = challenges.length;
+            
+            const progress = ((currentChallenge) / challenges.length) * 100;
+            document.getElementById('progress-fill').style.width = progress + '%';
+            
+            const optionsGrid = document.getElementById('options-grid');
+            optionsGrid.innerHTML = '';
+            
+            challenge.options.forEach((option, index) => {
+                const btn = document.createElement('div');
+                btn.className = 'option-btn';
+                btn.innerHTML = `
+                    <div class="option-title">${option.text}</div>
+                    <div class="option-desc">${option.desc}</div>
+                `;
+                
+                btn.addEventListener('click', () => selectOption(index));
+                optionsGrid.appendChild(btn);
+            });
+            
+            selectedOption = null;
+            document.getElementById('submit-btn').disabled = true;
+            document.getElementById('feedback').classList.remove('show');
+            document.getElementById('next-btn').style.display = 'none';
+        }
+
+        function selectOption(index) {
+            selectedOption = index;
+            
+            document.querySelectorAll('.option-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            document.querySelectorAll('.option-btn')[index].classList.add('selected');
+            document.getElementById('submit-btn').disabled = false;
+        }
+
+        document.getElementById('submit-btn').addEventListener('click', submitAnswer);
+        document.getElementById('next-btn').addEventListener('click', nextChallenge);
+
+        function submitAnswer() {
+            const challenge = challenges[currentChallenge];
+            const selectedBtn = document.querySelectorAll('.option-btn')[selectedOption];
+            const isCorrect = challenge.options[selectedOption].correct;
+            
+            if (isCorrect) {
+                selectedBtn.classList.add('correct');
+                score++;
+                document.getElementById('score').textContent = score;
+                document.getElementById('feedback-title').textContent = '🎉 Correct!';
+                document.getElementById('feedback-text').textContent = challenge.correctFeedback;
+            } else {
+                selectedBtn.classList.add('incorrect');
+                // Highlight correct answer
+                challenge.options.forEach((option, index) => {
+                    if (option.correct) {
+                        document.querySelectorAll('.option-btn')[index].classList.add('correct');
+                    }
+                });
+                document.getElementById('feedback-title').textContent = '💡 Not Quite';
+                document.getElementById('feedback-text').textContent = challenge.incorrectFeedback;
+            }
+            
+            document.getElementById('feedback').classList.add('show');
+            document.getElementById('submit-btn').style.display = 'none';
+            document.getElementById('next-btn').style.display = 'block';
+            
+            // Disable all options
+            document.querySelectorAll('.option-btn').forEach(btn => {
+                btn.style.cursor = 'default';
+                btn.onclick = null;
+            });
+        }
+
+        function nextChallenge() {
+            currentChallenge++;
+            loadChallenge();
+            document.getElementById('submit-btn').style.display = 'block';
+        }
+
+        function showFinalScore() {
+            const percentage = Math.round((score / challenges.length) * 100);
+            let message = '';
+            
+            if (percentage >= 80) {
+                message = '🌟 Outstanding! You have an excellent understanding of carbon removal methods!';
+            } else if (percentage >= 60) {
+                message = '✅ Great job! You understand the key trade-offs in carbon removal.';
+            } else {
+                message = '💡 Good effort! Review the methods to better understand their strengths and limitations.';
+            }
+            
+            document.getElementById('challenge-title').textContent = '🏆 Challenge Complete!';
+            document.getElementById('scenario-text').textContent = message;
+            document.getElementById('options-grid').innerHTML = '';
+            document.getElementById('feedback').classList.remove('show');
+            document.getElementById('next-btn').textContent = 'Play Again';
+            document.getElementById('next-btn').onclick = () => {
+                currentChallenge = 0;
+                score = 0;
+                document.getElementById('score').textContent = 0;
+                loadChallenge();
+            };
+        }
+
+        function updateCalculator() {
+            const methodId = document.getElementById('calc-method').value;
+            const target = parseFloat(document.getElementById('calc-target').value);
+            const budget = parseFloat(document.getElementById('calc-budget').value) * 1000000; // Convert to dollars
+            
+            const method = carbonMethods.find(m => m.id === methodId);
+            
+            const costPerTon = method.costPerTon;
+            const maxRemoval = budget / costPerTon;
+            const actualRemoval = Math.min(target, maxRemoval);
+            const totalCost = actualRemoval * costPerTon;
+            
+            document.getElementById('result-cost').textContent = `$${costPerTon}`;
+            document.getElementById('result-removed').textContent = `${Math.round(actualRemoval).toLocaleString()} tons`;
+            document.getElementById('result-timeline').textContent = `${method.timeline} years`;
+            document.getElementById('result-permanence').textContent = `${method.permanenceYears.toLocaleString()} years`;
+            
+            document.getElementById('calc-result').style.display = 'block';
+            
+            // Update method info
+            const methodInfo = document.getElementById('method-info');
+            methodInfo.innerHTML = `
+                <div class="detail-section">
+                    <div class="detail-label">${method.icon} ${method.name}</div>
+                    <div class="detail-value">${method.description}</div>
+                </div>
+                <div class="detail-section">
+                    <div class="detail-label">✅ Advantages:</div>
+                    <div class="detail-value">${method.pros}</div>
+                </div>
+                <div class="detail-section">
+                    <div class="detail-label">❌ Disadvantages:</div>
+                    <div class="detail-value">${method.cons}</div>
+                </div>
+                <div class="detail-section">
+                    <div class="detail-value"><strong>Budget Analysis:</strong><br>
+                    With $${(budget/1000000).toFixed(1)}M, you can remove ${Math.round(maxRemoval).toLocaleString()} tons CO₂.
+                    ${target > maxRemoval ? `To reach your ${target.toLocaleString()} ton target, you'd need $${((target * costPerTon)/1000000).toFixed(1)}M.` : 'Your budget exceeds the target!'}</div>
+                </div>
+            `;
+        }
+
+        initGame();
+    </script>
+
+    <!-- Educational Content Section -->
+    <div class="container">
+        <div class="education-section">
+            <h2 class="education-title">📚 Learn About Carbon Removal</h2>
+            
+            <div class="education-content">
+                <div class="education-block">
+                    <h3>🌍 Why Do We Need Carbon Removal?</h3>
+                    <p>Even with aggressive emissions reductions, we need carbon dioxide removal (CDR) to limit warming to 1.5-2°C. Here's why:</p>
+                    <ul>
+                        <li><strong>Past Emissions:</strong> We've already emitted too much CO₂. The atmosphere now contains 420+ ppm (parts per million) of CO₂, up from pre-industrial levels of 280 ppm.</li>
+                        <li><strong>Hard-to-Decarbonize Sectors:</strong> Aviation, shipping, steel, and cement will likely still emit CO₂ for decades. CDR can offset these residual emissions.</li>
+                        <li><strong>Overshoot Scenarios:</strong> We'll likely exceed our carbon budget temporarily. CDR can help bring temperatures back down.</li>
+                        <li><strong>Historical Responsibility:</strong> To return to safe CO₂ levels, we need to remove what we've already emitted.</li>
+                    </ul>
+                    <p><strong>The Scale Challenge:</strong> Climate models show we need to remove 5-10 billion tons of CO₂ annually by 2050 to meet climate goals. Currently, we remove less than 0.01% of that through engineered methods.</p>
+                </div>
+
+                <div class="education-block">
+                    <h3>⚖️ Carbon Removal vs Carbon Capture</h3>
+                    <p>These terms are often confused, but they're different:</p>
+                    <div class="comparison-grid">
+                        <div class="comparison-item">
+                            <h4>🏭 Carbon Capture (Point Source)</h4>
+                            <p><strong>What:</strong> Capturing CO₂ from concentrated sources like power plants and factories</p>
+                            <p><strong>Purpose:</strong> Prevent NEW emissions from reaching the atmosphere</p>
+                            <p><strong>Example:</strong> CCS (Carbon Capture & Storage) at a coal plant</p>
+                            <p><strong>Climate Impact:</strong> Reduces emissions, doesn't reduce atmospheric CO₂</p>
+                        </div>
+                        <div class="comparison-item">
+                            <h4>🌱 Carbon Removal (CDR)</h4>
+                            <p><strong>What:</strong> Removing CO₂ that's already in the atmosphere</p>
+                            <p><strong>Purpose:</strong> Reduce EXISTING atmospheric CO₂ levels</p>
+                            <p><strong>Example:</strong> Direct Air Capture, reforestation</p>
+                            <p><strong>Climate Impact:</strong> Creates negative emissions, reduces atmospheric CO₂</p>
+                        </div>
+                    </div>
+                    <p><strong>Both are needed!</strong> Carbon capture prevents new pollution; carbon removal cleans up past pollution.</p>
+                </div>
+
+                <div class="education-block">
+                    <h3>📊 Evaluating Carbon Removal Methods</h3>
+                    <p>When comparing CDR methods, scientists consider these key criteria:</p>
+                    
+                    <h4 style="margin-top: 20px; margin-bottom: 10px;">💰 Cost per Ton of CO₂</h4>
+                    <p>How much it costs to remove one ton of CO₂. Ranges from $10 (trees) to $600+ (DAC). For perspective, we need to remove billions of tons annually.</p>
+                    
+                    <h4 style="margin-top: 20px; margin-bottom: 10px;">📈 Scale Potential</h4>
+                    <p>Maximum CO₂ that could be removed globally. Some methods can remove gigatons (billions of tons) per year; others are limited to megatons (millions of tons).</p>
+                    
+                    <h4 style="margin-top: 20px; margin-bottom: 10px;">🔒 Permanence (Storage Duration)</h4>
+                    <p>How long the CO₂ stays out of the atmosphere:</p>
+                    <ul>
+                        <li><strong>Decades:</strong> Living biomass (forests, soils) - vulnerable to disturbance</li>
+                        <li><strong>Centuries:</strong> Biochar, some ocean methods</li>
+                        <li><strong>Millennia:</strong> Geological storage, enhanced weathering</li>
+                    </ul>
+                    
+                    <h4 style="margin-top: 20px; margin-bottom: 10px;">🧪 Technology Readiness</h4>
+                    <p>Is it proven at scale or still in research?</p>
+                    <ul>
+                        <li><strong>Proven:</strong> Reforestation (deployed globally for decades)</li>
+                        <li><strong>Pilot/Early Stage:</strong> DAC (only a few facilities worldwide)</li>
+                        <li><strong>Research:</strong> Ocean alkalinity enhancement (lab/small tests only)</li>
+                    </ul>
+                    
+                    <h4 style="margin-top: 20px; margin-bottom: 10px;">🌱 Co-Benefits & Risks</h4>
+                    <p><strong>Co-benefits:</strong> Additional positive impacts (biodiversity, soil health, jobs)<br>
+                    <strong>Risks:</strong> Potential negative side effects (ecosystem disruption, land competition)</p>
+                    
+                    <h4 style="margin-top: 20px; margin-bottom: 10px;">📏 Measurability</h4>
+                    <p>How accurately can we measure the CO₂ removed? Engineered methods are precise; nature-based solutions are harder to quantify.</p>
+                </div>
+
+                <div class="education-block">
+                    <h3>🌳 Nature-Based Solutions</h3>
+                    <p>These methods use natural ecosystems to capture and store carbon:</p>
+                    
+                    <div class="method-details-box">
+                        <h4>Reforestation & Afforestation</h4>
+                        <p><strong>How it works:</strong> Trees absorb CO₂ through photosynthesis and store it in biomass and soil.</p>
+                        <p><strong>Potential:</strong> Could remove 3-18 Gt CO₂/year globally</p>
+                        <p><strong>Cost:</strong> $10-50 per ton</p>
+                        <p><strong>Permanence:</strong> 40-100 years (vulnerable to fire, disease, logging)</p>
+                        <p><strong>Reality check:</strong> We'd need an area the size of the US planted with trees to make a major dent. Competes with agriculture and requires careful management.</p>
+                    </div>
+                    
+                    <div class="method-details-box">
+                        <h4>Soil Carbon Sequestration</h4>
+                        <p><strong>How it works:</strong> Regenerative agriculture, cover crops, and no-till farming increase soil organic matter.</p>
+                        <p><strong>Potential:</strong> 2-5 Gt CO₂/year</p>
+                        <p><strong>Cost:</strong> $15-100 per ton</p>
+                        <p><strong>Bonus:</strong> Improves crop yields, water retention, and resilience</p>
+                        <p><strong>Challenge:</strong> Soil carbon can be released if practices change. Difficult to monitor and verify.</p>
+                    </div>
+                    
+                    <div class="method-details-box">
+                        <h4>Blue Carbon (Coastal Ecosystems)</h4>
+                        <p><strong>What:</strong> Mangroves, salt marshes, and seagrass meadows store carbon in plant biomass and sediments.</p>
+                        <p><strong>Superpower:</strong> Sequester carbon 40x faster per area than forests!</p>
+                        <p><strong>Potential:</strong> 0.5-1.5 Gt CO₂/year</p>
+                        <p><strong>Challenge:</strong> Limited area available; restoration is costly and complex</p>
+                    </div>
+                </div>
+
+                <div class="education-block">
+                    <h3>🏭 Engineered Solutions</h3>
+                    
+                    <div class="method-details-box">
+                        <h4>Direct Air Capture (DAC)</h4>
+                        <p><strong>How it works:</strong> Large fans pull air through chemical filters that bind with CO₂. The CO₂ is then separated (using heat) and compressed for storage or use.</p>
+                        <p><strong>Storage:</strong> Injected underground into basalt rock or saline aquifers where it mineralizes</p>
+                        <p><strong>Current status:</strong> ~20 DAC plants globally removing ~10,000 tons CO₂/year (we need to scale to billions of tons)</p>
+                        <p><strong>Companies:</strong> Climeworks (Switzerland), Carbon Engineering (Canada), Global Thermostat (US)</p>
+                        <p><strong>Cost challenge:</strong> Currently $600-1,000/ton. Needs to drop to $100-200/ton to be viable at scale.</p>
+                        <p><strong>Energy requirements:</strong> Significant - must use renewable energy or it's counterproductive</p>
+                    </div>
+                    
+                    <div class="method-details-box">
+                        <h4>Bioenergy with Carbon Capture & Storage (BECCS)</h4>
+                        <p><strong>How it works:</strong> Grow biomass (crops/trees) → Burn for energy → Capture CO₂ from smokestack → Store underground</p>
+                        <p><strong>Net effect:</strong> Negative emissions + renewable energy</p>
+                        <p><strong>Potential:</strong> 3-10 Gt CO₂/year</p>
+                        <p><strong>Major concerns:</strong></p>
+                        <ul>
+                            <li>Massive land requirements (could compete with food production)</li>
+                            <li>Water intensive</li>
+                            <li>Biodiversity impacts</li>
+                            <li>Only carbon-neutral if sustainably sourced</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="method-details-box">
+                        <h4>Enhanced Weathering</h4>
+                        <p><strong>How it works:</strong> Spreading crushed silicate rocks (like basalt) on land or in oceans accelerates the natural process where rocks react with CO₂ to form stable carbonate minerals.</p>
+                        <p><strong>Natural inspiration:</strong> This process has regulated Earth's climate for millions of years - we're just speeding it up.</p>
+                        <p><strong>Potential:</strong> 2-4 Gt CO₂/year</p>
+                        <p><strong>Permanence:</strong> 100,000+ years (essentially permanent)</p>
+                        <p><strong>Challenges:</strong> Mining and transportation impacts, slow reaction times, monitoring difficulty</p>
+                    </div>
+                    
+                    <div class="method-details-box">
+                        <h4>Biochar</h4>
+                        <p><strong>How it works:</strong> Heating biomass (agricultural waste, wood) in low-oxygen environment (pyrolysis) creates a charcoal-like substance rich in stable carbon.</p>
+                        <p><strong>Multiple benefits:</strong></p>
+                        <ul>
+                            <li>Sequesters carbon for centuries</li>
+                            <li>Improves soil fertility and water retention</li>
+                            <li>Reduces need for fertilizers</li>
+                            <li>Uses agricultural waste</li>
+                        </ul>
+                        <p><strong>Potential:</strong> 0.5-2 Gt CO₂/year</p>
+                        <p><strong>Cost:</strong> $100-300/ton</p>
+                        <p><strong>Status:</strong> Growing industry with hundreds of facilities worldwide</p>
+                    </div>
+                </div>
+
+                <div class="education-block">
+                    <h3>🌊 Ocean-Based Solutions</h3>
+                    <p>The ocean naturally absorbs 25% of our CO₂ emissions. Can we enhance this?</p>
+                    
+                    <div class="method-details-box">
+                        <h4>Ocean Alkalinity Enhancement</h4>
+                        <p><strong>How it works:</strong> Adding alkaline materials (like crushed limestone) to the ocean increases its capacity to absorb CO₂ and reduces acidification.</p>
+                        <p><strong>Potential:</strong> Large (multi-gigaton scale)</p>
+                        <p><strong>Status:</strong> Early research phase</p>
+                        <p><strong>Concerns:</strong> Ecosystem impacts unknown, monitoring challenges, governance questions</p>
+                    </div>
+                    
+                    <div class="method-details-box">
+                        <h4>Ocean Iron Fertilization</h4>
+                        <p><strong>How it works:</strong> Adding iron to iron-poor ocean areas stimulates phytoplankton blooms. When phytoplankton die, some carbon sinks to the deep ocean.</p>
+                        <p><strong>Controversy:</strong> High uncertainty about effectiveness and side effects (toxic blooms, oxygen depletion, disrupted food webs)</p>
+                        <p><strong>Status:</strong> Largely halted due to concerns about unintended consequences and the London Protocol (international treaty)</p>
+                    </div>
+                </div>
+
+                <div class="education-block">
+                    <h3>💡 The Reality Check</h3>
+                    <p>Carbon removal is essential but faces major challenges:</p>
+                    <ul>
+                        <li><strong>Scale mismatch:</strong> We emit 40 Gt CO₂/year and need to remove 5-10 Gt/year by 2050. Current engineered removal is ~0.01 Gt/year.</li>
+                        <li><strong>Cost barrier:</strong> At $100-1000/ton, removing billions of tons annually would cost hundreds of billions to trillions of dollars.</li>
+                        <li><strong>Energy requirements:</strong> Many methods need enormous energy inputs - must be renewable or we're just shifting emissions.</li>
+                        <li><strong>Trade-offs:</strong> No perfect solution. Nature-based is cheap but temporary; engineered is permanent but expensive.</li>
+                        <li><strong>Not a substitute:</strong> CDR cannot replace emissions reductions. We must do both - think of it as "stop the bleeding AND heal the wound."</li>
+                    </ul>
+                    <p><strong>The bottom line:</strong> Carbon removal is necessary but insufficient on its own. The priority must remain rapidly cutting emissions to net-zero.</p>
+                </div>
+
+                <div class="education-block">
+                    <h3>🎯 What You Can Do</h3>
+                    <div class="action-grid">
+                        <div class="action-item">
+                            <div class="action-emoji">🌳</div>
+                            <strong>Support Tree Planting:</strong> Donate to verified reforestation projects or plant trees locally. Focus on native species and long-term protection.
+                        </div>
+                        <div class="action-item">
+                            <div class="action-emoji">💰</div>
+                            <strong>Buy Carbon Removal:</strong> Several companies sell verified carbon removal credits. Frontier, Stripe, and Shopify are bulk buyers driving down costs.
+                        </div>
+                        <div class="action-item">
+                            <div class="action-emoji">🗳️</div>
+                            <strong>Advocate for Policy:</strong> Support R&D funding, carbon pricing, and subsidies for CDR. The US Inflation Reduction Act offers $180/ton tax credit for DAC.
+                        </div>
+                        <div class="action-item">
+                            <div class="action-emoji">🔬</div>
+                            <strong>Stay Informed:</strong> CDR is rapidly evolving. Follow developments in costs, scale, and new methods. Beware of greenwashing.
+                        </div>
+                        <div class="action-item">
+                            <div class="action-emoji">🌱</div>
+                            <strong>Garden Smarter:</strong> Compost, mulch, and avoid tilling to build soil carbon. Plant trees and shrubs for long-term carbon storage.
+                        </div>
+                        <div class="action-item">
+                            <div class="action-emoji">⚡</div>
+                            <strong>Prioritize Emissions Cuts:</strong> Remember - preventing emissions is always better and cheaper than removing them later.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="education-block">
+                    <h3>📊 Key Statistics</h3>
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-number">40 Gt</div>
+                            <div class="stat-label">CO₂ we emit globally per year</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number">5-10 Gt</div>
+                            <div class="stat-label">CO₂ we need to remove annually by 2050</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number">0.01 Gt</div>
+                            <div class="stat-label">Current engineered removal capacity (2024)</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number">420+ ppm</div>
+                            <div class="stat-label">Current atmospheric CO₂ (280 pre-industrial)</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number">$10-$1000</div>
+                            <div class="stat-label">Cost per ton range (trees to DAC)</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number">25%</div>
+                            <div class="stat-label">Of our emissions absorbed by oceans</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="education-block">
+                    <h3>⚠️ Risks & Concerns</h3>
+                    <p>Carbon removal isn't risk-free. Important concerns include:</p>
+                    <ul>
+                        <li><strong>Moral Hazard:</strong> Does CDR give us permission to keep polluting? It shouldn't - we must cut emissions first.</li>
+                        <li><strong>Permanence Risk:</strong> Forests can burn, soil carbon can be released, stored CO₂ can leak. Verification is critical.</li>
+                        <li><strong>Land Competition:</strong> Large-scale BECCS or reforestation could compete with food production, raising food prices and security concerns.</li>
+                        <li><strong>Ecosystem Disruption:</strong> Ocean fertilization and some other methods could harm marine ecosystems in unpredictable ways.</li>
+                        <li><strong>Energy Penalty:</strong> If powered by fossil fuels, some CDR methods could emit more CO₂ than they remove.</li>
+                        <li><strong>Equity Issues:</strong> Who pays? Who benefits? Indigenous lands and developing nations shouldn't bear the burden of rich countries' emissions.</li>
+                        <li><strong>Greenwashing:</strong> Companies may use low-quality carbon credits to appear climate-friendly while continuing to pollute.</li>
+                    </ul>
+                </div>
+
+                <div class="education-block">
+                    <h3>🔬 Cutting-Edge Research</h3>
+                    <p>Scientists are exploring innovative new approaches:</p>
+                    <ul>
+                        <li><strong>Electro-geochemistry:</strong> Using renewable electricity to accelerate rock weathering reactions</li>
+                        <li><strong>Seaweed farming:</strong> Growing macroalgae that sinks carbon to the ocean floor</li>
+                        <li><strong>Biomass burial:</strong> Burying biomass in low-oxygen environments (like under mud) to prevent decomposition</li>
+                        <li><strong>CO₂ to products:</strong> Converting captured CO₂ into useful materials (concrete, plastics, fuels)</li>
+                        <li><strong>Artificial trees:</strong> Structures with special resins that capture CO₂ more efficiently than DAC</li>
+                    </ul>
+                </div>
+
+                <div class="education-block">
+                    <h3>🔗 Learn More</h3>
+                    <ul class="resources-list">
+                        <li><strong>IPCC AR6 Working Group III:</strong> Comprehensive assessment of carbon removal in climate mitigation (ipcc.ch)</li>
+                        <li><strong>Carbon180:</strong> US nonprofit advancing carbon removal policy and innovation (carbon180.org)</li>
+                        <li><strong>CDR.fyi:</strong> Database tracking carbon removal projects and companies worldwide</li>
+                        <li><strong>State of Carbon Dioxide Removal Report:</strong> Annual report on CDR deployment and gaps (smithschool.ox.ac.uk)</li>
+                        <li><strong>Climeworks & Carbon Engineering:</strong> Leading DAC companies with educational resources</li>
+                        <li><strong>Project Vesta:</strong> Coastal carbon capture using enhanced weathering (projectvesta.org)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .education-section {
+            margin: 40px 0 60px 0;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            color: #1f2937;
+        }
+
+        .education-title {
+            font-size: 36px;
+            text-align: center;
+            margin-bottom: 40px;
+            color: #667eea;
+        }
+
+        .education-content {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .education-block {
+            margin-bottom: 40px;
+            padding: 30px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .education-block h3 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: #667eea;
+        }
+
+        .education-block h4 {
+            font-size: 20px;
+            color: #764ba2;
+            margin-bottom: 10px;
+        }
+
+        .education-block p {
+            font-size: 16px;
+            line-height: 1.8;
+            margin-bottom: 15px;
+            color: #374151;
+        }
+
+        .education-block ul,
+        .education-block ol {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .education-block li {
+            font-size: 16px;
+            line-height: 1.8;
+            margin-bottom: 10px;
+            color: #374151;
+        }
+
+        .education-block strong {
+            color: #1f2937;
+            font-weight: 600;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .comparison-item {
+            padding: 20px;
+            background: #f3f4f6;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+        }
+
+        .comparison-item h4 {
+            margin-bottom: 15px;
+        }
+
+        .method-details-box {
+            padding: 20px;
+            background: #f3f4f6;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border-left: 4px solid #22c55e;
+        }
+
+        .method-details-box h4 {
+            color: #22c55e;
+            margin-bottom: 15px;
+        }
+
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .action-item {
+            padding: 20px;
+            background: #f3f4f6;
+            border-radius: 12px;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .action-emoji {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .action-item strong {
+            display: block;
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: #3b82f6;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .stat-box {
+            padding: 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            text-align: center;
+            color: white;
+        }
+
+        .stat-number {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .resources-list {
+            list-style: none;
+            margin-left: 0;
+        }
+
+        .resources-list li {
+            padding: 15px;
+            background: #f3f4f6;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        @media (max-width: 768px) {
+            .education-section {
+                padding: 20px;
+            }
+
+            .education-title {
+                font-size: 28px;
+            }
+
+            .education-block {
+                padding: 20px;
+            }
+
+            .education-block h3 {
+                font-size: 24px;
+            }
+
+            .comparison-grid,
+            .action-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</body>
+</html>
